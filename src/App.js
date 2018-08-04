@@ -62,10 +62,12 @@ class App extends Component {
         }
 
         // shuffle that list and return it
-
         return shuffleArray(cardsData, {'copy': true});
     }
 
+    /**
+     * Set state to initial state TODO: DRY
+     */
     resetGame() {
         this.setState({
             cardsData: this.generateCardsData(),
@@ -74,21 +76,63 @@ class App extends Component {
     }
 
     /**
-     * Main game logic. Called when a card is clicked
+     * Main game logic. Called when a card is clicked. Split up in subfunctions.
      * @param {Number} idOfClickedCard
      */
     handleCardTurnOver(idOfClickedCard) {
+        debugger;
         // set cardsData entry for clicked card to visible:true while not mutating any state
-        const cardsDataEntryId = this.state.cardsData.findIndex((el) => el.id === idOfClickedCard);
-        const copiedCardsData = [...this.state.cardsData];
-        const copiedCardsDataEntry = {...copiedCardsData[cardsDataEntryId]};
-        copiedCardsDataEntry.visible = true;
-        copiedCardsData[cardsDataEntryId] = copiedCardsDataEntry;
-        this.setState({
-            cardsData: copiedCardsData
-        })
+        this.setCardVisibility(idOfClickedCard, true, this.checkForPairing)
+
 
     }
+
+    /**
+     * First part of main logic.
+     * @param {Number} id
+     * @param {Boolean} visible
+     * @param {Function} cb
+     */
+    setCardVisibility(id, visible, cb) {
+
+        const cardsDataEntryListIndex = this.state.cardsData.findIndex((el) => el.id === id);
+        const copiedCardsData = [...this.state.cardsData];
+        const copiedCardsDataEntry = {...copiedCardsData[cardsDataEntryListIndex]};
+        copiedCardsDataEntry.visible = visible;
+        copiedCardsData[cardsDataEntryListIndex] = copiedCardsDataEntry;
+
+        const callback = cb ? cb.bind(this, id) : null; // handle unpassed callback
+        this.setState({
+            cardsData: copiedCardsData
+        }, callback); // make sure the next part is run after setState has finished
+    }
+
+    /**
+     * Second part of main logic.
+     * Run after a clicked card is turned over (its data entry is set to visible:true)
+     */
+    checkForPairing(idOfClickedCard) {
+
+        // if – in the current round – no card was turned yet, register id of clicked card as activeCardId
+        const activeCardId = this.state.activeCardId;
+        if (!activeCardId) {
+            this.setState({
+                activeCardId: idOfClickedCard
+            })
+        }
+        // else ( if – in the current round – a card has already been turned over), compare colors of both cards using the cards IDs
+        else {
+            // if they are not equal, set both card data entries to visible:false again
+            if (idOfClickedCard !== activeCardId) {
+                [activeCardId, idOfClickedCard].forEach((id) => this.setCardVisibility(id, false, null))
+            }
+            // in any case set activeCardId to null again
+            this.setState({
+                activeCardId: null
+            })
+        }
+    }
+
 
 }
 
