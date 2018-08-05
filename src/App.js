@@ -11,7 +11,8 @@ class App extends Component {
         super(props);
         this.state = {
             cardsData: this.generateCardsData(),
-            activeCardId: null
+            activeCardId: null,
+            noClick: false,
         };
 
         this.resetGame = this.resetGame.bind(this);
@@ -80,9 +81,9 @@ class App extends Component {
      * @param {Number} idOfClickedCard
      */
     handleCardTurnOver(idOfClickedCard) {
-        console.log('handleCardTurnOver called')
-        // set cardsData entry for clicked card to visible:true while not mutating any state
-        this.setCardVisibility(idOfClickedCard, true, this.checkForPairing)
+        console.log('handleCardTurnOver called');
+        // if allowed to handle click, set cardsData entry for clicked card to visible:true while not mutating any state
+        !this.state.noClick && this.setCardVisibility(idOfClickedCard, true, this.checkForPairing)
 
 
     }
@@ -122,13 +123,18 @@ class App extends Component {
         }
         // else ( if – in the current round – a card has already been turned over), compare colors of both cards using the cards IDs
         else {
+            // prevent user from turning over other cards while the current pair is showing
+            this.setState({noClick: true});
+
             // if they are not equal, set both card data entries to visible:false again
             const colorOfFirstCard = this.getColorForCardId(activeCardId);
             const colorOfSecondCard = this.getColorForCardId(idOfClickedCard);
             if (colorOfFirstCard !== colorOfSecondCard) {
                 // give it a bit of delay (TODO: use css to slim code)
                 setTimeout(() => {
-                    [activeCardId, idOfClickedCard].forEach((id) => this.setCardVisibility(id, false, null))
+                    [activeCardId, idOfClickedCard].forEach((id) => this.setCardVisibility(id, false, null));
+                    // allow user to turn over cards again
+                    this.setState({noClick: false});
                 }, 2000)
 
             }
