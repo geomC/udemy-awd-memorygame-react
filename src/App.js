@@ -20,14 +20,14 @@ class App extends Component {
     render() {
         return (
             <div className="App">
-                <NavBar headingText="Memory Game" onResetBtnClick={this.resetGame}/>
-                <div className="cardboard">
-                    {
-                        this.state.cardsData.map((cardDataEntry, i) => <Card key={i}{...cardDataEntry}/>)
-                    }
-                </div>
-            </div>
-        );
+            <NavBar headingText="Memory Game" onResetBtnClick={this.resetGame}/>
+        <div className="cardboard">
+            {
+                this.state.cardsData.map((cardDataEntry, i) => <Card key={i}{...cardDataEntry}/>)
+    }
+    </div>
+        </div>
+    );
     }
 
     static NUM_PAIRS = 9;
@@ -80,7 +80,7 @@ class App extends Component {
      * @param {Number} idOfClickedCard
      */
     handleCardTurnOver(idOfClickedCard) {
-        debugger;
+        console.log('handleCardTurnOver called')
         // set cardsData entry for clicked card to visible:true while not mutating any state
         this.setCardVisibility(idOfClickedCard, true, this.checkForPairing)
 
@@ -123,14 +123,24 @@ class App extends Component {
         // else ( if – in the current round – a card has already been turned over), compare colors of both cards using the cards IDs
         else {
             // if they are not equal, set both card data entries to visible:false again
-            if (idOfClickedCard !== activeCardId) {
-                [activeCardId, idOfClickedCard].forEach((id) => this.setCardVisibility(id, false, null))
+            const colorOfFirstCard = this.getColorForCardId(activeCardId);
+            const colorOfSecondCard = this.getColorForCardId(idOfClickedCard);
+            if (colorOfFirstCard !== colorOfSecondCard) {
+                // give it a bit of delay (TODO: use css to slim code)
+                setTimeout(() => {
+                    [activeCardId, idOfClickedCard].forEach((id) => this.setCardVisibility(id, false, null))
+                }, 2000)
+
             }
             // in any case set activeCardId to null again
             this.setState({
                 activeCardId: null
             })
         }
+    }
+
+    getColorForCardId(id) {
+        return this.state.cardsData.find(cardDataItem => cardDataItem.id === id).color;
     }
 
 

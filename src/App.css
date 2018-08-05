@@ -40,7 +40,7 @@ header button:focus {
     border-radius: 12px;
     margin: 12px;
     filter: brightness(0);
-    transition: 1s filter 0.1s;
+    transition: 1s filter ease-out;
 }
 
 .card.visible {
